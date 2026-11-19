@@ -1,4 +1,4 @@
-import { Code2, Play, RotateCcw, Settings, Volume2, VolumeX } from 'lucide-react';
+import { Code2, Download, Play, RotateCcw, Settings, Volume2, VolumeX } from 'lucide-react';
 import {
   CharacterConfig,
   FRIENDS_CAST,
@@ -17,6 +17,7 @@ interface LobbyScreenProps {
   onUpdateSettings: (patch: Partial<GameSettings>) => void;
   onOpenSettings: () => void;
   onOpenGodot: () => void;
+  onOpenDownload: () => void;
 }
 
 export function LobbyScreen({
@@ -29,6 +30,7 @@ export function LobbyScreen({
   onUpdateSettings,
   onOpenSettings,
   onOpenGodot,
+  onOpenDownload,
 }: LobbyScreenProps) {
   return (
     <div className="pointer-events-none fixed inset-0 z-20 flex flex-col justify-between p-5 sm:p-8">
@@ -69,6 +71,15 @@ export function LobbyScreen({
           >
             <Settings className="h-4 w-4" />
             <span>Settings</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={onOpenDownload}
+            className="flex h-10 items-center gap-1.5 rounded-lg border border-emerald-600/80 bg-emerald-950/85 px-3 text-xs font-bold text-emerald-300 hover:border-emerald-400 cursor-pointer whitespace-nowrap"
+          >
+            <Download className="h-4 w-4" />
+            <span>Download Game</span>
           </button>
 
           <button
@@ -153,6 +164,15 @@ export function LobbyScreen({
           >
             <Play className="h-5 w-5 fill-current" />
             <span>NEW GAME — START IN VILLUPURAM</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={onOpenDownload}
+            className="flex w-full items-center justify-center gap-2 rounded-lg border border-emerald-600/70 bg-emerald-950/60 px-4 py-2.5 text-xs font-bold text-emerald-200 hover:border-emerald-400 transition-colors cursor-pointer"
+          >
+            <Download className="h-4 w-4" />
+            <span>DOWNLOAD OFFLINE GAME (.HTML / .ZIP / GODOT 4)</span>
           </button>
         </div>
       </div>

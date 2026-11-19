@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { GameHud } from './components/GameHud';
 import { LobbyScreen } from './components/LobbyScreen';
 import {
+  DownloadGameModal,
   GodotScriptsModal,
   MapMissionsModal,
   PauseModal,
@@ -63,6 +64,7 @@ export default function App() {
   const [showMap, setShowMap] = useState(false);
   const [showShop, setShowShop] = useState(false);
   const [showGodot, setShowGodot] = useState(false);
+  const [showDownload, setShowDownload] = useState(false);
 
   const settingsRef = useRef(settings);
   settingsRef.current = settings;
@@ -143,6 +145,7 @@ export default function App() {
           onUpdateSettings={updateSettings}
           onOpenSettings={() => setShowSettings(true)}
           onOpenGodot={() => setShowGodot(true)}
+          onOpenDownload={() => setShowDownload(true)}
         />
       )}
 
@@ -165,7 +168,7 @@ export default function App() {
         />
       )}
 
-      {phase === 'paused' && !showSettings && !showMap && !showShop && (
+      {phase === 'paused' && !showSettings && !showMap && !showShop && !showDownload && (
         <PauseModal
           onResume={() => engineRef.current?.resumeGame()}
           onSave={() => {
@@ -175,6 +178,7 @@ export default function App() {
           onOpenMap={() => setShowMap(true)}
           onOpenInventory={() => setShowShop(true)}
           onOpenSettings={() => setShowSettings(true)}
+          onOpenDownload={() => setShowDownload(true)}
           onLobby={() => engineRef.current?.returnToLobby()}
         />
       )}
@@ -208,6 +212,10 @@ export default function App() {
       )}
 
       {showGodot && <GodotScriptsModal onClose={() => setShowGodot(false)} />}
+
+      {showDownload && (
+        <DownloadGameModal savedGame={savedGame} onClose={() => setShowDownload(false)} />
+      )}
     </div>
   );
 }

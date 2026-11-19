@@ -1,11 +1,32 @@
-import { Check, Coffee, Compass, Copy, MapPin, Play, Save, Shirt, X } from 'lucide-react';
+import {
+  Archive,
+  Check,
+  Code2,
+  Coffee,
+  Compass,
+  Copy,
+  Download,
+  FileCode2,
+  MapPin,
+  Play,
+  Save,
+  Shirt,
+  X,
+} from 'lucide-react';
 import { useState } from 'react';
+import {
+  downloadGodotProjectZip,
+  downloadOfflineHtmlGame,
+  downloadOfflinePcZip,
+  downloadSaveFile,
+} from '../game/downloadPackages';
 import { GODOT_FOLDER_STRUCTURE, GODOT_STAGE_DOCS } from '../game/godotScripts';
 import {
   GameSettings,
   MISSIONS,
   OpenWorldHudState,
   OutfitId,
+  SaveGameData,
   SHOP_ITEMS,
   WeatherMode,
 } from '../game/types';
@@ -16,6 +37,7 @@ export function PauseModal({
   onOpenMap,
   onOpenInventory,
   onOpenSettings,
+  onOpenDownload,
   onLobby,
 }: {
   onResume: () => void;
@@ -23,6 +45,7 @@ export function PauseModal({
   onOpenMap: () => void;
   onOpenInventory: () => void;
   onOpenSettings: () => void;
+  onOpenDownload: () => void;
   onLobby: () => void;
 }) {
   return (
@@ -59,6 +82,13 @@ export function PauseModal({
             className="rounded-lg border border-slate-600 bg-slate-800 py-2.5 text-sm font-semibold text-slate-100 hover:border-amber-400 cursor-pointer"
           >
             Food, Inventory & Tamil Outfits
+          </button>
+          <button
+            type="button"
+            onClick={onOpenDownload}
+            className="flex items-center justify-center gap-2 rounded-lg border border-sky-700/70 bg-sky-950/50 py-2.5 text-sm font-semibold text-sky-200 hover:border-sky-400 cursor-pointer"
+          >
+            <Download className="h-4 w-4" /> Download Offline Game / Godot ZIP
           </button>
           <button
             type="button"
@@ -456,7 +486,7 @@ export function GodotScriptsModal({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
       <div className="flex max-h-[90vh] w-full max-w-4xl flex-col rounded-xl border border-slate-700 bg-[#0f1620] shadow-2xl">
-        <div className="flex items-center justify-between border-b border-slate-800 px-5 py-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 px-5 py-4">
           <div>
             <h2 className="font-display text-lg font-bold text-white">
               KIGO – Godot 4 GDScript Architecture (Stages 1–9)
@@ -465,13 +495,23 @@ export function GodotScriptsModal({ onClose }: { onClose: () => void }) {
               Complete modular GDScript files, folder tree, Input Map & GLB character import guide
             </p>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white cursor-pointer"
-          >
-            <X className="h-5 w-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={downloadGodotProjectZip}
+              className="flex items-center gap-1.5 rounded-lg bg-emerald-500 px-3 py-1.5 text-xs font-bold text-slate-950 hover:bg-emerald-400 cursor-pointer"
+            >
+              <Download className="h-3.5 w-3.5" />
+              <span>Download Godot 4 .ZIP</span>
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white cursor-pointer"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
         </div>
 
         <div className="flex flex-wrap gap-1.5 border-b border-slate-800 bg-slate-950/60 px-5 py-2.5">
@@ -527,6 +567,176 @@ export function GodotScriptsModal({ onClose }: { onClose: () => void }) {
             </div>
             <pre className="font-mono-num text-xs text-slate-300 whitespace-pre-wrap">{GODOT_FOLDER_STRUCTURE}</pre>
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function DownloadGameModal({
+  savedGame,
+  onClose,
+}: {
+  savedGame: SaveGameData | null;
+  onClose: () => void;
+}) {
+  const [busyKey, setBusyKey] = useState<string | null>(null);
+  const [statusMsg, setStatusMsg] = useState<string | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const runDownload = async (key: string, label: string, fn: () => Promise<void> | void) => {
+    setBusyKey(key);
+    setErrorMsg(null);
+    setStatusMsg(null);
+    try {
+      await fn();
+      setStatusMsg(`Downloaded ${label}`);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg === 'ALREADY_OFFLINE') {
+        setErrorMsg('You are already running the standalone offline HTML file locally.');
+      } else {
+        setErrorMsg(`Could not prepare download (${msg}).`);
+      }
+    } finally {
+      setBusyKey(null);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+      <div className="flex max-h-[90vh] w-full max-w-2xl flex-col rounded-xl border border-slate-700 bg-[#0f1620] shadow-2xl">
+        <div className="flex items-center justify-between border-b border-slate-800 px-5 py-4">
+          <div className="flex items-center gap-2.5">
+            <Download className="h-5 w-5 text-emerald-400" />
+            <div>
+              <h2 className="font-display text-lg font-bold text-white">
+                Download KIGO – The Tamil Nadu Open World
+              </h2>
+              <p className="text-xs text-slate-400">
+                Play 100% offline on PC/Mac/Android or open the Godot 4 source project
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white cursor-pointer"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-5 space-y-3.5">
+          {statusMsg && (
+            <div className="rounded-lg border border-emerald-700/70 bg-emerald-950/60 px-3.5 py-2.5 text-xs font-semibold text-emerald-200">
+              {statusMsg}
+            </div>
+          )}
+          {errorMsg && (
+            <div className="rounded-lg border border-amber-700/70 bg-amber-950/60 px-3.5 py-2.5 text-xs font-semibold text-amber-200">
+              {errorMsg}
+            </div>
+          )}
+
+          {/* Option 1: Single-File Offline Playable Game */}
+          <div className="rounded-xl border border-emerald-700/60 bg-slate-900/90 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <FileCode2 className="h-4 w-4 text-emerald-400" />
+                <span className="font-display text-sm font-bold text-white">
+                  Offline Playable Game (Single File)
+                </span>
+              </div>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                Self-contained 3D game file (<span className="font-mono-num text-emerald-300">KIGO-TamilNadu-OpenWorld.html</span>). Double-click on Windows, macOS, Linux, or Android to play offline in any modern browser — no server or install required.
+              </p>
+            </div>
+            <button
+              type="button"
+              disabled={busyKey !== null}
+              onClick={() =>
+                runDownload('html', 'KIGO-TamilNadu-OpenWorld.html', downloadOfflineHtmlGame)
+              }
+              className="shrink-0 flex items-center justify-center gap-2 rounded-lg bg-emerald-500 px-4 py-2.5 font-display text-xs font-bold text-slate-950 hover:bg-emerald-400 disabled:opacity-60 cursor-pointer"
+            >
+              <Download className="h-4 w-4" />
+              <span>{busyKey === 'html' ? 'Preparing...' : 'Download .HTML'}</span>
+            </button>
+          </div>
+
+          {/* Option 2: Offline PC ZIP Package */}
+          <div className="rounded-xl border border-slate-700/80 bg-slate-900/80 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <Archive className="h-4 w-4 text-amber-400" />
+                <span className="font-display text-sm font-bold text-white">
+                  Offline PC Archive (.ZIP + Controls Guide)
+                </span>
+              </div>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                Packages the standalone offline 3D game with <span className="font-mono-num text-amber-300">HOW_TO_PLAY.txt</span> inside a ready-to-share <span className="font-mono-num text-amber-300">.zip</span> archive.
+              </p>
+            </div>
+            <button
+              type="button"
+              disabled={busyKey !== null}
+              onClick={() =>
+                runDownload('pczip', 'KIGO-TamilNadu-OpenWorld-PC.zip', downloadOfflinePcZip)
+              }
+              className="shrink-0 flex items-center justify-center gap-2 rounded-lg bg-amber-500 px-4 py-2.5 font-display text-xs font-bold text-slate-950 hover:bg-amber-400 disabled:opacity-60 cursor-pointer"
+            >
+              <Download className="h-4 w-4" />
+              <span>{busyKey === 'pczip' ? 'Bundling...' : 'Download PC .ZIP'}</span>
+            </button>
+          </div>
+
+          {/* Option 3: Godot 4 Project ZIP */}
+          <div className="rounded-xl border border-sky-700/60 bg-slate-900/80 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <Code2 className="h-4 w-4 text-sky-400" />
+                <span className="font-display text-sm font-bold text-white">
+                  Godot 4 Complete Project (.ZIP)
+                </span>
+              </div>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                Includes <span className="font-mono-num text-sky-300">project.godot</span> (pre-mapped WASD/Sprint/Crouch/Vehicle inputs), starter <span className="font-mono-num text-sky-300">.tscn</span> scenes, and all Stage 1–9 GDScript files ready to import in Godot 4.2+.
+              </p>
+            </div>
+            <button
+              type="button"
+              disabled={busyKey !== null}
+              onClick={() =>
+                runDownload('godot', 'KIGO-TamilNadu-Godot4-Project.zip', downloadGodotProjectZip)
+              }
+              className="shrink-0 flex items-center justify-center gap-2 rounded-lg bg-sky-500 px-4 py-2.5 font-display text-xs font-bold text-slate-950 hover:bg-sky-400 disabled:opacity-60 cursor-pointer"
+            >
+              <Download className="h-4 w-4" />
+              <span>{busyKey === 'godot' ? 'Creating...' : 'Download Godot .ZIP'}</span>
+            </button>
+          </div>
+
+          {/* Option 4: Export Save Data */}
+          {savedGame && (
+            <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="space-y-0.5">
+                <div className="text-xs font-bold text-slate-200">
+                  Export Story Save Backup ({savedGame.completedMissions.length} missions · ₹{savedGame.money})
+                </div>
+                <div className="text-[11px] text-slate-400">Saved {savedGame.savedAt}</div>
+              </div>
+              <button
+                type="button"
+                onClick={() =>
+                  runDownload('save', 'kigo-tamilnadu-save.json', () => downloadSaveFile(savedGame))
+                }
+                className="shrink-0 rounded-lg border border-slate-600 bg-slate-800 px-3.5 py-2 text-xs font-semibold text-slate-200 hover:border-amber-400 cursor-pointer"
+              >
+                Export Save .JSON
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
