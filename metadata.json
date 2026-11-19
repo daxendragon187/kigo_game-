@@ -1,0 +1,6 @@
+{
+  "name": "Kigo Battle Royale",
+  "description": "3D Third-Person Tactical Battle Royale — drop onto Kigo Island against 29 AI operatives with vehicles, 5 weapon classes, loot, and a shrinking safe zone.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
